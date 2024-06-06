@@ -1,25 +1,30 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 
 import "./App.css";
+import { getRandomNumberFromApi, useRandom } from "./hooks/useRandom";
+
+
 
 export const App = () => {
-  const [number, setNumber] = useState<number>();
-  const getRandomNumberFromApi = async (): Promise<number> => {
-    const res = await fetch(
-      `https://www.random.org/integers/?num=1&min=1&max=500&col=1&base=10&format=plain&rnd=new`
-    );
-    const numberToString = await res.text();
-    return +numberToString;
-  };
-
+ 
+const query = useRandom()
   useEffect(() => {
-    getRandomNumberFromApi().then((n) => setNumber(n));
+    getRandomNumberFromApi();
   }, []);
 
   return (
     <>
       <div className="App App-header">
-        <h1>Random number:{number}</h1>
+        {query.isFetching ? (
+          <h3>Cargando...</h3>
+        ) : (
+          <h1>Random number:{query.data}</h1>
+        )}
+        {!query.isLoading && query.isError && <h3> {`${query.error}`}</h3>}
+
+        <button onClick={() => query.refetch()} disabled={query.isFetching}>
+          {query.isFetching ? "..." : "New number"}
+        </button>
       </div>
     </>
   );
